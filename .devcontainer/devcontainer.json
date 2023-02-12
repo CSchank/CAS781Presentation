@@ -1,0 +1,43 @@
+{
+	"name": "IHP Devcontainer",
+
+	"build": {
+	  "dockerfile": "Dockerfile"
+	},
+
+	"mounts": [
+	  "source=ihp_nix,target=/nix,type=volume"
+	],
+
+	"containerEnv": {
+	  "PROJECT_DIR": "${containerWorkspaceFolder}"
+	},
+
+	"settings": {
+	  "terminal.integrated.profiles.linux": {
+		"bash": {
+			"path": "/bin/bash"
+		  }
+		},
+		"terminal.integrated.defaultProfile.linux": "bash"
+	},
+
+	"userEnvProbe": "loginShell",
+
+	"extensions": [
+	  "bbenoist.nix"
+	  ,"eamodio.gitlens"
+	  ,"haskell.haskell"
+	  ,"justusadam.language-haskell"
+	],
+
+	"onCreateCommand": {
+		"Install Direnv": "sudo apt install direnv",
+		"Install and set up Cachix": "echo '/etc/profile.d/installcachix.sh' >> ~/.bashrc",
+		"Set up direnv": "echo 'eval \"$(direnv hook bash)\"' >> ~/.bashrc"
+	},
+
+	"forwardPorts": [],
+
+	"remoteUser": "vscode"
+  }
