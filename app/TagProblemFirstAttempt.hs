@@ -1,4 +1,4 @@
-module TagProblemTypeError where
+module TagProblemFirstAttempt where
 
 import Prelude hiding(lookup)
 
