@@ -16,6 +16,7 @@ instance Eq Colour where
 testT = Red == Red
 testF = Red == Yellow
 
+-- bad type: fancyEq :: a -> a -> String
 fancyEq :: Eq a => a -> a -> String
 fancyEq x y = 
     if x == y then "They're equal!"
