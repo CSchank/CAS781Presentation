@@ -62,3 +62,34 @@ class Eval(Sym):
 
 e = Eval()
 print(e.app(e.lam(lambda x: x), e.b(True)))
+
+class CC(Sym):
+    def b(self,b):
+        return 1
+    
+    def lam(self,f): 
+        return 1 + f(0)
+
+    def app(self,f,x):
+        return 1 + f + x
+
+c = CC()
+test = c.app(c.lam(lambda x: x), c.b(True))
+print(test)
+
+def b(b):
+    return lambda c: c.b(b)
+
+def lam(f):
+    return lambda c: c.lam(f)
+
+def app(f,x):
+    return lambda c: c.app(f(c),x(c))
+    
+def run(f,c):
+    return f(c)
+        
+
+test = app(lam(lambda x: x), b(True))
+print(run(test,Eval()))
+print(run(test,CC()))
