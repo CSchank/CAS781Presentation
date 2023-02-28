@@ -10,7 +10,7 @@ import qualified Prelude (sqrt)
 class Exprs repr where
     const  :: Double -> repr Double
     var    :: String -> repr String
-    sqrt   :: repr Double -> repr Double
+    sqrt   :: repr a -> repr b
     -- uncomment and fill in these type signatures
     -- intPow :: _
     -- exp    :: _
