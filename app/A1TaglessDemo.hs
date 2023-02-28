@@ -3,63 +3,84 @@ module A1TagfulDemo where
 import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map
 
-data Expr = Const Float
-          | Var String -- in math we often use Char
-          | Sqrt Expr -- we can take sqrt(anything)
-          | IntPow Expr Int -- the easy case of exponent
-          | Exp Expr -- e^expr
-          | Ln Expr
-          | Mult Expr Expr
-          | Add Expr Expr
-          | Neg Expr
+import Prelude hiding(const, sqrt)
+import qualified Prelude (sqrt)
 
-pretty :: Expr -> String
-pretty (Const f)      = show f
-pretty (Var v)        = v
-pretty (Sqrt e)       = "sqrt(" ++ pretty e ++ ")"
-pretty (IntPow e exp) = pretty e ++ "^" ++ show exp
-pretty (Exp e)        = "e^("++ (pretty e) ++ ")"
-pretty (Ln e)         = "ln("++pretty e++ ")"
-pretty (Add e1 e2)    = (pretty e1) ++ " + " ++ (pretty e2)
-pretty (Neg e)        = "- (" ++ pretty e ++ ")"
+class Exprs repr where
+    const  :: Double  -> repr Double
+    var    :: String -> repr String
+    sqrt   :: repr a -> repr b
+    intPow :: repr a -> Int -> repr b
+    exp    :: repr a -> repr b
+    ln     :: repr a -> repr b
+    add    :: repr a -> repr a -> repr b
+    mult   :: repr a -> repr a -> repr b
+    neg    :: repr a -> repr b
 
-test1 = Add (Var "x") (Var "y")
+newtype Pretty a = Pretty String
 
-e = exp 1
+pretty (Pretty a) = a
 
-eval :: Map String Float -> Expr -> Either String Float
-eval env expr =
-  case expr of
-    (Var name) -> 
-        case Map.lookup name env of
+instance Exprs Pretty where
+    const f    = Pretty $ show f
+    var   s    = Pretty s
+    sqrt  a    = Pretty $ "sqrt(" ++ pretty a ++ ")"
+    intPow e n = Pretty $ pretty e ++ "^" ++ show n
+    exp   e    = Pretty $ "e^(" ++ pretty e ++ ")"
+    ln    e    = Pretty $ "ln(" ++ pretty e ++ ")"
+    add e1 e2  = Pretty $ pretty e1 ++ " + " ++ pretty e2
+    mult e1 e2 = Pretty $ pretty e1 ++ " * " ++ pretty e2
+    neg   e    = Pretty $ "- (" ++ pretty e ++ ")"
+
+test1 :: Exprs repr => repr a
+test1 = add (var "x") (var "y")
+
+newtype Eval a = Eval (Map String Double -> Either String Double)
+eval env (Eval exp) = exp env
+
+testEnv = Map.fromList [("x", 1), ("y", 2.5)]
+
+instance Exprs Eval where
+    const f = Eval $ \env -> Right f
+    var   s = Eval $ \env ->
+        case Map.lookup s env of
             Just val -> Right val
-            Nothing  -> Left ( name ++ " undefined" )
-    (Mult expr1 expr2) -> 
-      case (eval env expr1, eval env expr2) of
-        (Right val1, Right val2) -> Right $ val1 * val2
-        (Left e, _)                -> Left e
-        (_,Left e)                 -> Left e
-    (Sqrt expr1) -> 
-      case eval env expr1 of
-        Right r -> 
-          if r >= 0 then 
-            Right $ sqrt r
-          else
-            Left "Cannot take the square root of a negative number"
-        Left e ->
-          Left $ "In square root: " ++ e
-    (Const c) -> Right c
-    (IntPow expr1 exponent) -> 
-      fmap (\r -> r ^^ exponent) $ eval env expr1
-    (Exp expr1) -> 
-      fmap (\r -> exp r) $ eval env expr1
-    (Ln expr1) ->  
-      fmap (logBase e) $ eval env expr1
-    (Add expr1 expr2) -> 
-      case (eval env expr1) of
-        Right a -> case eval env expr2 of
-            Right b -> Right $ a + b
-            Left e -> Left e
-        Left e -> Left e
-    (Neg expr1) ->
-      fmap negate $ eval env expr1
+            Nothing  -> Left ( s ++ " undefined" )
+    sqrt e = Eval $ \env ->
+        case eval env e of
+            Right e -> 
+                if e < 0 then
+                    Left $ "Argument to square root is negative"
+                else
+                    Right $ Prelude.sqrt e
+            Left err -> Left $ "Error in square root argument: " ++ err
+    intPow e n = Eval $ \env ->
+        case eval env e of
+            Right e -> 
+                Right $ e ^^ n
+            Left err -> Left $ "Error in intPow argument: " ++ err
+    exp e = Eval $ \env ->
+        case eval env e of
+            Right e -> 
+                Right $ Prelude.exp e
+            Left err -> Left $ "Error in exp argument: " ++ err
+    ln e = Eval $ \env ->
+        case eval env e of
+            Right e -> 
+                Right $ Prelude.log e
+            Left err -> Left $ "Error in ln argument: " ++ err
+    add e1 e2 = Eval $ \env ->
+        case (eval env e1, eval env e2) of
+            (Right val1, Right val2) -> Right $ val1 + val2
+            (Left e, _)              -> Left e
+            (_,Left e)               -> Left e
+    mult e1 e2 = Eval $ \env ->
+        case (eval env e1, eval env e2) of
+            (Right val1, Right val2) -> Right $ val1 * val2
+            (Left e, _)              -> Left e
+            (_,Left e)               -> Left e
+    neg e = Eval $ \env ->
+        case eval env e of
+            Right e -> 
+                Right $ -e
+            Left err -> Left $ "Error in neg argument: " ++ err
