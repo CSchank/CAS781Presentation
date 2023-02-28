@@ -7,7 +7,7 @@ import Prelude hiding(const, sqrt)
 import qualified Prelude (sqrt)
 
 class Exprs repr where
-    const  :: Double  -> repr Double
+    const  :: Double -> repr Double
     var    :: String -> repr String
     sqrt   :: repr a -> repr b
     intPow :: repr a -> Int -> repr b

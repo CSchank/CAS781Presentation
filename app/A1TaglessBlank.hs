@@ -8,7 +8,7 @@ import qualified Prelude (sqrt)
 
 -- 1. Add the type signatures for the following methods
 class Exprs repr where
-    const  :: Double  -> repr Double
+    const  :: Double -> repr Double
     var    :: String -> repr String
     sqrt   :: repr a -> repr b
     -- uncomment and fill in these type signatures
