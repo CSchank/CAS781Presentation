@@ -13,6 +13,8 @@ data Expr = Const Float
           | Add Expr Expr
           | Neg Expr
 
+-- Exp :: Expr -> Expr
+
 pretty :: Expr -> String
 pretty (Const f)      = show f
 pretty (Var v)        = v
