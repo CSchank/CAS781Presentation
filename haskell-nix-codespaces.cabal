@@ -32,6 +32,6 @@ executable haskell-nix-codespaces
     build-depends:    
         base >=4.14.3.0,
         containers,
-        type-level-sets == 0.7
+        type-level-sets == 0.8.6.0
     hs-source-dirs:   app
     default-language: Haskell2010
