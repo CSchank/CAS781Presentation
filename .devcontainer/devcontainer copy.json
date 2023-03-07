@@ -1,13 +1,19 @@
 {
-	"image": "haskell",
+	"image": "ghcr.io/zombiezen/codespaces-nix",
 
 	"hostRequirements": {
 		"cpus": 4
 	  },
 
+	"onCreateCommand": {
+		"Setup direnv": "sudo apt install direnv; echo 'eval \"$(direnv hook bash)\"' >> ~/.bashrc && nix-shell -j auto --cores 0 --run 'make -s .envrc' && direnv allow"
+	},
+
 	"containerEnv": {
 	  "PROJECT_DIR": "${containerWorkspaceFolder}"
 	},
+
+	"remoteUser": "vscode",
 
 	"customizations": {
 	  "vscode": {
